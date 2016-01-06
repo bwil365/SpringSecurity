@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xmlns:context="http://www.springframework.org/schema/context"
+         xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xmlns:repository="http://www.springframework.org/schema/data/repository"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/context
+ 		  http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security.xsd
+           http://www.springframework.org/schema/data/jpa
+ 		  http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+ 		  http://www.springframework.org/schema/data/repository
+       http://www.springframework.org/schema/data/repository/spring-repository.xsd
+          ">
+          
+    <context:component-scan base-package="com.app" />
+    
+    <!-- Spring Security Configuration -->
+    <security:http auto-config="true">
+        <security:intercept-url pattern="/protected/*" access="hasRole('ROLE_USER')" />
+        <security:form-login 
+        login-page="/security/login"  
+        authentication-failure-url="/security/login?error"
+        username-parameter="user_param" 
+        password-parameter="pass_param"/>
+        <security:logout delete-cookies="JSESSIONID" logout-url="/logout" logout-success-url="/public/home"/>
+    </security:http>
+    
+    <security:authentication-manager>
+		<security:authentication-provider ref="SecurityAuthenticationProvider" />
+    </security:authentication-manager>
+    
+
+
+	<jpa:repositories base-package="com.app.repositories"/>
+
+	<!-- DataSource configuration -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost/springsecurity"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+	<!-- DataSource configuration -->
+    <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="showSql" value="true"/>
+        <property name="generateDdl" value="true"/>
+        <property name="database" value="MYSQL"/>
+    </bean>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
+        <!-- spring based scanning for entity classes-->
+        <property name="packagesToScan" value="com.app.entities"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"/>
+    
+	<bean id="UserService" class="com.app.services.UserService" />
+	<bean id="SecurityAuthenticationProvider" class="com.app.security.SecurityAuthenticationProvider" />
+	
+    
+</beans>
